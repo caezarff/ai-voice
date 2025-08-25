@@ -84,7 +84,7 @@ export default function AI_Voice() {
           </div>
 
           <motion.div
-            className="text-white/50 text-sm font-mono"
+            className="text-white/50 text-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.2 }}

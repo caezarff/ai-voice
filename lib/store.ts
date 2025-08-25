@@ -19,7 +19,7 @@ interface VoiceState {
 }
 
 const fullText =
-  "Sabe, eu estava pensando outro dia em como as coisas mudam rápido. Às vezes a gente acha que nada está acontecendo, mas quando olha pra trás percebe o quanto já caminhou. É engraçado como pequenos momentos, que na hora parecem simples, acabam se tornando memórias gigantes...";
+  "You know, I was thinking the other day about how quickly things change. Sometimes we feel like nothing is happening, but when we look back, we realize how far we've come. It's funny how small moments that seem simple at the time end up becoming huge memories...";
 
 export const useVoiceStore = create<VoiceState>((set, get) => ({
   submitted: false,
