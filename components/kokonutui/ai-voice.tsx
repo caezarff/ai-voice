@@ -1,142 +1,111 @@
-"use client"
+"use client";
 
-/**
- * @author: @kokonutui
- * @description: AI Voice
- * @version: 1.0.0
- * @date: 2025-06-26
- * @license: MIT
- * @website: https://kokonutui.com
- * @github: https://github.com/kokonut-labs/kokonutui
- */
-
-import { Mic } from "lucide-react"
-import { useState, useEffect } from "react"
-import { cn } from "@/lib/utils"
+import { Mic } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "motion/react";
+import { useVoiceStore } from "@/lib/store";
+import VisualizationBox from "./visualization-box";
 
 export default function AI_Voice() {
-  const [submitted, setSubmitted] = useState(false)
-  const [time, setTime] = useState(0)
-  const [isClient, setIsClient] = useState(false)
-  const [isDemo, setIsDemo] = useState(true)
-
-  useEffect(() => {
-    setIsClient(true)
-  }, [])
-
-  useEffect(() => {
-    let intervalId: NodeJS.Timeout
-
-    if (submitted) {
-      intervalId = setInterval(() => {
-        setTime((t) => t + 1)
-      }, 1000)
-    } else {
-      setTime(0)
-    }
-
-    return () => clearInterval(intervalId)
-  }, [submitted])
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return `${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`
-  }
-
-  /**
-   * Remove that, only used for demo
-   */
-  useEffect(() => {
-    if (!isDemo) return
-
-    let timeoutId: NodeJS.Timeout
-    const runAnimation = () => {
-      setSubmitted(true)
-      timeoutId = setTimeout(() => {
-        setSubmitted(false)
-        timeoutId = setTimeout(runAnimation, 1000)
-      }, 3000)
-    }
-
-    const initialTimeout = setTimeout(runAnimation, 100)
-    return () => {
-      clearTimeout(timeoutId)
-      clearTimeout(initialTimeout)
-    }
-  }, [isDemo])
+  const { submitted, time, toggleSubmitted } = useVoiceStore();
 
   const handleClick = () => {
-    if (isDemo) {
-      setIsDemo(false)
-      setSubmitted(false)
-    } else {
-      setSubmitted((prev) => !prev)
-    }
-  }
+    toggleSubmitted();
+  };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center" style={{ backgroundColor: "#121212" }}>
+    <div
+      className="min-h-screen w-full flex items-center justify-center"
+      style={{ backgroundColor: "#121212" }}
+    >
       <div className="w-full py-4">
         <div className="relative max-w-xl w-full mx-auto flex items-center flex-col gap-2">
-          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-6 mb-6 max-w-md mx-auto border border-white/10">
-            <p className="text-white/80 text-sm mb-4">Não esquecer de revisar aquele arquivo amanhã cedo.</p>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-white animate-spin" style={{ animationDuration: "1s" }} />
-              <span className="text-white/60 text-sm">Generating</span>
-            </div>
-          </div>
-
-          <button
+          <motion.button
             className={cn(
               "group w-16 h-16 rounded-xl flex items-center justify-center transition-colors",
-              submitted ? "bg-none" : "bg-none hover:bg-white/10",
+              submitted ? "bg-none" : "bg-none hover:bg-white/10"
             )}
             type="button"
             onClick={handleClick}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 400, damping: 17 }}
           >
-            {submitted ? (
-              <div
-                className="w-6 h-6 rounded-sm animate-spin bg-white cursor-pointer pointer-events-auto"
-                style={{ animationDuration: "3s" }}
-              />
-            ) : (
-              <Mic className="w-6 h-6 text-white/90" />
-            )}
-          </button>
-
-          <span
-            className={cn(
-              "font-mono text-sm transition-opacity duration-300",
-              submitted ? "text-white/70" : "text-white/30",
-            )}
-          >
-            {formatTime(time)}
-          </span>
+            <AnimatePresence mode="wait">
+              {submitted ? (
+                <motion.div
+                  key="loading"
+                  className="w-6 h-6 rounded-sm bg-white cursor-pointer pointer-events-auto"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1, rotate: 360 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{
+                    rotate: { duration: 2, repeat: Infinity, ease: "linear" },
+                    opacity: { duration: 0.3 },
+                    scale: { duration: 0.3 },
+                  }}
+                />
+              ) : (
+                <motion.div
+                  key="mic"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.8 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <Mic className="w-6 h-6 text-white/90" />
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </motion.button>
 
           <div className="h-4 w-64 flex items-center justify-center gap-0.5">
             {[...Array(48)].map((_, i) => (
-              <div
+              <motion.div
                 key={i}
-                className={cn(
-                  "w-0.5 rounded-full transition-all duration-300",
-                  submitted ? "bg-white/50 animate-pulse" : "bg-white/10 h-1",
-                )}
-                style={
-                  submitted && isClient
-                    ? {
-                        height: `${20 + Math.random() * 80}%`,
-                        animationDelay: `${i * 0.05}s`,
-                      }
-                    : undefined
-                }
+                className={cn("w-0.5 rounded-full bg-white/10")}
+                animate={{
+                  height: submitted
+                    ? `${20 + Math.sin(i * 0.5) * 30 + 20}%`
+                    : "4px",
+                  backgroundColor: submitted
+                    ? "rgba(255, 255, 255, 0.5)"
+                    : "rgba(255, 255, 255, 0.1)",
+                }}
+                transition={{
+                  duration: 0.5,
+                  delay: i * 0.02,
+                  repeat: submitted ? Infinity : 0,
+                  repeatType: "reverse",
+                  repeatDelay: 0.1,
+                }}
               />
             ))}
           </div>
 
-          <p className="h-4 text-xs text-white/70">{submitted ? "Listening..." : "Click to speak"}</p>
+          <motion.div
+            className="text-white/50 text-sm font-mono"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {String(Math.floor(time / 60)).padStart(2, "0")}:
+            {String(time % 60).padStart(2, "0")}
+          </motion.div>
+
+          <motion.p
+            className="h-4 text-xs text-white/70"
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            {submitted ? "Listening..." : "Click to speak"}
+          </motion.p>
+
+          <AnimatePresence>
+            <VisualizationBox />
+          </AnimatePresence>
         </div>
       </div>
     </div>
-  )
+  );
 }
